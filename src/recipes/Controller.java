@@ -1,31 +1,44 @@
 package recipes;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/recipe")
+@Validated
 public class Controller {
-    private final HashMap<Integer, Recipe> storage = new HashMap<>();
+    @Autowired
+    private RecipeService recipeService;
 
-    @GetMapping("/recipe/{id}")
+    @GetMapping("/{id}")
     public Recipe getRecipe(@PathVariable int id) {
-        if (storage.get(id) == null) {
+        if (!recipeService.exists(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        return storage.get(id);
+        return recipeService.get(id);
     }
 
-    @PostMapping("/recipe/new")
-    public ResponseEntity<Map<String, Integer>> addRecipe(@RequestBody Recipe recipeRequest) {
-        int index = storage.size();
-        Recipe recipe = storage.put(index, recipeRequest);
+    @PostMapping("/new")
+    public ResponseEntity<Map<String, Integer>> addRecipe(@RequestBody @Valid Recipe recipe) {
+        int index = recipeService.create(recipe);
         return ResponseEntity.ok(Collections.singletonMap("id",index));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteRecipe(@PathVariable int id) {
+        boolean deleted = recipeService.deleteById(id);
+        if (deleted) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 }
