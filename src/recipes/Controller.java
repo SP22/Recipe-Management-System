@@ -9,6 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -26,10 +27,31 @@ public class Controller {
         return recipeService.get(id);
     }
 
+    @GetMapping("/search")
+    public List<Recipe> searchRecipes(@RequestParam(required = false) String category
+            ,@RequestParam(required = false) String name) {
+        if (null != category) {
+            return recipeService.search("category", category);
+        } else if (null != name) {
+            return recipeService.search("name", name);
+        }
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+    }
+
     @PostMapping("/new")
     public ResponseEntity<Map<String, Integer>> addRecipe(@RequestBody @Valid Recipe recipe) {
         int index = recipeService.create(recipe);
         return ResponseEntity.ok(Collections.singletonMap("id",index));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateRecipe(@PathVariable int id, @Valid @RequestBody Recipe recipe) {
+        boolean updated = recipeService.updateById(id, recipe);
+        if (updated) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @DeleteMapping("/{id}")
