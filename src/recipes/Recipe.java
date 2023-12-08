@@ -18,24 +18,36 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "recipes")
 public class Recipe {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @JsonIgnore
     private Integer id;
+
     @NotBlank
-    String name;
+    private String name;
+
     @NotBlank
-    String description;
+    private String description;
+
     @NotBlank
-    String category;
+    private String category;
+
     @UpdateTimestamp
-    LocalDateTime date;
+    private LocalDateTime date;
+
     @NotNull
     @Size(min = 1) @ElementCollection
     @OrderColumn(name = "id")
-    String[] ingredients;
+    private String[] ingredients;
+
     @NotNull
     @Size(min = 1) @ElementCollection
+
     @OrderColumn(name = "id")
-    String[] directions;
+    private String[] directions;
+
+    @JsonIgnore
+    @ManyToOne
+    private User author;
 }
